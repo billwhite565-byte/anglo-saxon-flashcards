@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Anglo-Saxon Flashcards - Recall and Devices</title>
+  <style>
+    :root {
+      --sj-burgundy: #7b001c;
+      --sj-burgundy-dark: #4a0012;
+      --sj-gold: #f0c808;
+      --sj-light: #fdf7e6;
+      --sj-text-dark: #1f1f1f;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, var(--sj-burgundy-dark), var(--sj-burgundy));
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .timer-box {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      z-index: 10;
+      background: var(--sj-light);
+      color: var(--sj-burgundy-dark);
+      border: 3px solid var(--sj-gold);
+      border-radius: 20px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+      padding: 0.8rem 1.2rem;
+      text-align: center;
+      min-width: 100px;
+    }
+
+    .timer-box[hidden] { display: none; }
+    .timer-label { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
+    .timer-number { font-size: 2.5rem; font-weight: 800; line-height: 1.2; font-variant-numeric: tabular-nums; }
+    h1 { font-size: 2rem; }
+
+    @media (max-width: 1100px), (max-height: 600px) {
+      body { box-sizing: border-box; padding-top: 180px; padding-bottom: 1rem; }
+    }
+
+    .container {
+      width: 95%;
+      max-width: 800px;
+      text-align: center;
+    }
+
+    .card {
+      background: var(--sj-light);
+      color: var(--sj-text-dark);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+      border: 3px solid var(--sj-gold);
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card-header {
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--sj-burgundy-dark);
+      margin-bottom: 1rem;
+    }
+
+    .card-text {
+      font-size: 1.1rem;
+      line-height: 1.5;
+    }
+
+    .card-footer {
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #555;
+      flex-wrap: wrap;
+    }
+
+    .buttons {
+      margin-top: 1.5rem;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      padding: 0.7rem 1.6rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: 0.1s;
+    }
+
+    .btn-flip {
+      background: var(--sj-gold);
+      color: var(--sj-burgundy-dark);
+    }
+
+    .btn-nav {
+      background: transparent;
+      color: white;
+      border: 2px solid var(--sj-gold);
+    }
+  </style>
+</head>
+<body>
+  <aside class="timer-box" id="timer-box" aria-label="Question countdown">
+    <div class="timer-label">Seconds left</div>
+    <div class="timer-number" id="timer-number" role="timer" aria-live="off">30</div>
+  </aside>
+  <div class="container">
+    <h1>Anglo-Saxon Flashcards - Recall and Devices</h1>
+
+    <div class="card">
+      <div class="card-header" id="card-side-label">Question</div>
+      <div class="card-text" id="card-text"></div>
+      <div class="card-footer">
+        <span id="card-progress">Card 1 of 50</span>
+        <span id="card-source"></span>
+      </div>
+    </div>
+
+    <div class="buttons">
+      <button class="btn-nav" id="prev-btn">Previous Question</button>
+      <button class="btn-flip" id="flip-btn">Flip Card</button>
+      <button class="btn-nav" id="next-btn">Next Question</button>
+    </div>
+  </div>
+
+  <script>
+    const flashcards = [
+      {
+        "source": "The Wanderer",
+        "question": "Who has died before the Wanderer begins his lonely journey?",
+        "answer": "His lord and his companions or kinsmen."
+      },
+      {
+        "source": "The Wanderer",
+        "question": "What place does the Wanderer remember sharing with his lord and fellow warriors?",
+        "answer": "The mead-hall, where they feasted together."
+      },
+      {
+        "source": "The Wanderer",
+        "question": "What does the Wanderer hope to find as he travels?",
+        "answer": "A new lord and a hall where he will be welcomed."
+      },
+      {
+        "source": "The Wanderer",
+        "question": "Who appears in the Wanderer's dream?",
+        "answer": "His former lord."
+      },
+      {
+        "source": "The Wanderer",
+        "question": "What animals does the Wanderer see on the water when he wakes?",
+        "answer": "Seabirds."
+      },
+      {
+        "source": "The Wanderer",
+        "question": "Name one kind of winter weather the Wanderer sees.",
+        "answer": "Snow, hail, or sleet."
+      },
+      {
+        "source": "The Wanderer",
+        "question": "What does the Wanderer say happens to wealth and friends?",
+        "answer": "They are fleeting: they do not last."
+      },
+      {
+        "source": "The Wanderer",
+        "question": "Who offers the final hope of comfort in the poem?",
+        "answer": "God, the Father in heaven."
+      },
+      {
+        "source": "The Seafarer",
+        "question": "Where is the speaker standing during his cold, anxious watch?",
+        "answer": "In the bow, or front, of the ship."
+      },
+      {
+        "source": "The Seafarer",
+        "question": "What covers or binds the speaker's feet?",
+        "answer": "Ice and frost."
+      },
+      {
+        "source": "The Seafarer",
+        "question": "Besides cold, what physical need troubles the speaker?",
+        "answer": "Hunger."
+      },
+      {
+        "source": "The Seafarer",
+        "question": "What musical instrument does the speaker miss hearing?",
+        "answer": "The harp."
+      },
+      {
+        "source": "The Seafarer",
+        "question": "What gifts does the speaker miss seeing a lord give?",
+        "answer": "Rings."
+      },
+      {
+        "source": "The Seafarer",
+        "question": "What happens to the wine-halls later in the poem?",
+        "answer": "They crumble, and their rulers lie dead."
+      },
+      {
+        "source": "The Seafarer",
+        "question": "Where does the speaker say lasting comfort and stability can be found?",
+        "answer": "In heaven with God."
+      },
+      {
+        "source": "The Seafarer",
+        "question": "What final word ends The Seafarer in the packet?",
+        "answer": "Amen."
+      },
+      {
+        "source": "The Wife's Lament",
+        "question": "Who leaves over the waves near the beginning of the wife's story?",
+        "answer": "Her husband, whom she calls her lord."
+      },
+      {
+        "source": "The Wife's Lament",
+        "question": "Whose relatives secretly plan to separate the couple?",
+        "answer": "Her husband's relatives."
+      },
+      {
+        "source": "The Wife's Lament",
+        "question": "What had the couple promised would be the only thing to separate them?",
+        "answer": "Death."
+      },
+      {
+        "source": "The Wife's Lament",
+        "question": "What kind of dwelling is the wife told to live in?",
+        "answer": "An earthen cave."
+      },
+      {
+        "source": "The Wife's Lament",
+        "question": "What kind of tree stands above her dwelling?",
+        "answer": "An oak."
+      },
+      {
+        "source": "The Wife's Lament",
+        "question": "What does the wife do alone during the summer-long day?",
+        "answer": "She sits and mourns her troubles."
+      },
+      {
+        "source": "The Wife's Lament",
+        "question": "What are other lovers doing while she is alone?",
+        "answer": "Lying together in bed."
+      },
+      {
+        "source": "The Wife's Lament",
+        "question": "Where does she imagine her husband sitting near the end?",
+        "answer": "By a stony, storm-beaten cliff, in a desolate home."
+      },
+      {
+        "source": "The Dream of the Rood",
+        "question": "What object begins speaking to the Dreamer?",
+        "answer": "The cross, also called the Rood or tree."
+      },
+      {
+        "source": "The Dream of the Rood",
+        "question": "What decorations does the Dreamer first see on the cross?",
+        "answer": "Gold and gemstones."
+      },
+      {
+        "source": "The Dream of the Rood",
+        "question": "Where was the tree before enemies cut it down?",
+        "answer": "At the edge of a forest."
+      },
+      {
+        "source": "The Dream of the Rood",
+        "question": "Who climbs onto the cross?",
+        "answer": "Christ."
+      },
+      {
+        "source": "The Dream of the Rood",
+        "question": "What do the soldiers drive into the cross?",
+        "answer": "Nails."
+      },
+      {
+        "source": "The Dream of the Rood",
+        "question": "Where do Christ's followers place his body?",
+        "answer": "In a tomb carved from stone."
+      },
+      {
+        "source": "The Dream of the Rood",
+        "question": "What does the cross tell the Dreamer to do with his vision?",
+        "answer": "Tell other people what he has seen."
+      },
+      {
+        "source": "The Dream of the Rood",
+        "question": "Where does the Dreamer hope to live after his earthly life?",
+        "answer": "In heaven or Paradise with Christ and the saints."
+      },
+      {
+        "source": "Devices and Terms",
+        "question": "The Wanderer uses \"winter-weary.\" Which device repeats the opening w sound?",
+        "answer": "Alliteration: repeated initial consonant sounds."
+      },
+      {
+        "source": "Devices and Terms",
+        "question": "The Seafarer uses \"groaned\" and \"soul.\" Which device repeats their long o vowel sound?",
+        "answer": "Assonance: repeated vowel sounds."
+      },
+      {
+        "source": "Devices and Terms",
+        "question": "The comparison chart marks \"This tale is true, and mine // it tells...\" What is the term for the pause at //?",
+        "answer": "Caesura: a strong pause within a line."
+      },
+      {
+        "source": "Devices and Terms",
+        "question": "The Wanderer ends with \"help from our Father in heaven.\" In the comparison chart, what term describes Christian passages within the lament?",
+        "answer": "Christian additions: passages introducing Christian themes or comfort."
+      },
+      {
+        "source": "Devices and Terms",
+        "question": "The Wanderer recalls his lord and says, \"That happy time is no more.\" What term describes this mournful kind of poem?",
+        "answer": "Elegy, or elegiac poetry: poetry that mourns loss."
+      },
+      {
+        "source": "Devices and Terms",
+        "question": "The Wife's Lament says, \"Then I set out, a friendless exile.\" What glossary term names separation from home and community?",
+        "answer": "Exile."
+      },
+      {
+        "source": "Devices and Terms",
+        "question": "The Dream of the Rood calls Christ \"strong and courageous.\" Which glossary term describes these qualities?",
+        "answer": "Heroic elements."
+      },
+      {
+        "source": "Devices and Terms",
+        "question": "The glossary gives \"Lo!\" and \"Hark!\" as translations of an Old English opening call for attention. Which term is it?",
+        "answer": "Hwæt. This example comes from the glossary, not a line in the four supplied poems."
+      },
+      {
+        "source": "Devices and Terms",
+        "question": "The Wanderer calls his lord a \"gold-friend.\" What device gives someone a new name using a compound metaphor?",
+        "answer": "Kenning. Here, gold-friend means the generous lord."
+      },
+      {
+        "source": "Devices and Terms",
+        "question": "The Wife's Lament begins, \"Full of sorrow, I shall make this song about me, my own fate.\" What kind of poem focuses on personal feelings?",
+        "answer": "Lyric poem."
+      },
+      {
+        "source": "Devices and Terms",
+        "question": "The Wanderer introduction refers to ancestors who lived before conversion to Christianity. What glossary term describes their pre-Christian polytheistic beliefs?",
+        "answer": "Pagan."
+      },
+      {
+        "source": "Devices and Terms",
+        "question": "The Wanderer introduction describes Hrothgar's court poet performing a heroic song. What glossary term names this kind of oral poet?",
+        "answer": "Scop."
+      },
+      {
+        "source": "Devices and Terms",
+        "question": "The comparison chart calls The Wife's Lament \"Purely secular Anglo-Saxon grief.\" Which term means worldly rather than religious?",
+        "answer": "Secular."
+      },
+      {
+        "source": "Devices and Terms",
+        "question": "The Wanderer asks, \"Where did the steed go? Where the young warrior?\" Which motif asks where vanished people and glories have gone?",
+        "answer": "Ubi Sunt."
+      },
+      {
+        "source": "Devices and Terms",
+        "question": "The Wanderer says, \"Fate is firmly set.\" Which Old English glossary term means fate or destiny?",
+        "answer": "Wyrd."
+      },
+      {
+        "source": "Devices and Terms",
+        "question": "The Dream of the Rood says, \"I was reared a rood; I raised up a mighty king.\" Which glossary term names the cross?",
+        "answer": "Rood."
+      },
+      {
+        "source": "Devices and Terms",
+        "question": "The Wanderer introduction describes poets performing heroic songs in the mead-hall. Which tradition passes stories through spoken performance?",
+        "answer": "Oral tradition."
+      },
+      {
+        "source": "Devices and Terms",
+        "question": "The Wife's Lament calls the cave an \"earth-hall.\" Which device replaces its ordinary name with a compound expression?",
+        "answer": "Kenning. Earth-hall refers to the earthen cave."
+      }
+    ];
+
+    // Shuffle once on opening; navigation then follows this random order.
+    for (let i = flashcards.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [flashcards[i], flashcards[j]] = [flashcards[j], flashcards[i]];
+    }
+
+    let currentIndex = 0;
+    let showingTitle = true;
+    let showingAnswer = false;
+
+    const cardTextEl = document.getElementById("card-text");
+    const cardSideLabelEl = document.getElementById("card-side-label");
+    const cardProgressEl = document.getElementById("card-progress");
+    const cardSourceEl = document.getElementById("card-source");
+
+    const timerBoxEl = document.getElementById("timer-box");
+    const timerNumberEl = document.getElementById("timer-number");
+    let countdownInterval = null;
+    let audioContext = null;
+    const soundingNotes = new Set();
+
+    // Browsers allow audio after a click or key press.
+    function enableAudio() {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return;
+      try {
+        if (!audioContext) audioContext = new AudioContextClass();
+        audioContext.resume().catch(() => {});
+      } catch (_) { /* Countdown remains available without audio. */ }
+    }
+    document.addEventListener("pointerdown", enableAudio);
+    document.addEventListener("keydown", enableAudio);
+
+    function playNote(frequency, volume, duration, delay = 0, type = "sine") {
+      if (!audioContext || audioContext.state !== "running") return;
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      const start = audioContext.currentTime + delay;
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(frequency, start);
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(volume, start + 0.006);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+      oscillator.connect(gain);
+      gain.connect(audioContext.destination);
+      soundingNotes.add(oscillator);
+      oscillator.onended = () => {
+        soundingNotes.delete(oscillator);
+        oscillator.disconnect();
+        gain.disconnect();
+      };
+      oscillator.start(start);
+      oscillator.stop(start + duration + 0.01);
+    }
+
+    function stopCountdown() {
+      if (countdownInterval !== null) clearInterval(countdownInterval);
+      countdownInterval = null;
+      for (const note of soundingNotes) {
+        try { note.stop(); } catch (_) {}
+      }
+      soundingNotes.clear();
+    }
+
+    function startCountdown() {
+      stopCountdown();
+      timerBoxEl.hidden = false;
+      timerNumberEl.textContent = "30";
+      const deadline = performance.now() + 30000;
+      let previousSeconds = 30;
+      countdownInterval = setInterval(() => {
+        const seconds = Math.max(0, Math.ceil((deadline - performance.now()) / 1000));
+        if (seconds === previousSeconds) return;
+        previousSeconds = seconds;
+        timerNumberEl.textContent = String(seconds);
+        if (seconds === 0) {
+          clearInterval(countdownInterval);
+          countdownInterval = null;
+          // Two gentle bell strikes, louder than the short countdown tocks.
+          playNote(880, 0.12, 0.55);
+          playNote(1320, 0.025, 0.4);
+          playNote(880, 0.12, 0.55, 0.65);
+          playNote(1320, 0.025, 0.4, 0.65);
+        } else {
+          playNote(seconds % 2 ? 220 : 260, 0.025, 0.06, 0, "triangle");
+        }
+      }, 100);
+    }
+
+    function renderCard() {
+      const prevBtn = document.getElementById("prev-btn");
+      const flipBtn = document.getElementById("flip-btn");
+      const nextBtn = document.getElementById("next-btn");
+      prevBtn.hidden = showingTitle;
+      flipBtn.hidden = showingTitle;
+      nextBtn.textContent = showingTitle ? "Start Flash Cards" : "Next Question";
+      if (showingTitle) {
+        stopCountdown();
+        timerBoxEl.hidden = true;
+        cardTextEl.textContent = "Anglo-Saxon Poetry Exam Flash Cards";
+        cardTextEl.style.fontSize = "2rem";
+        cardTextEl.style.fontWeight = "700";
+        cardSideLabelEl.textContent = "Welcome";
+        cardSourceEl.textContent = "";
+        cardProgressEl.textContent = "50 question cards";
+        return;
+      }
+      cardTextEl.style.fontSize = "";
+      cardTextEl.style.fontWeight = "";
+      const card = flashcards[currentIndex];
+
+      cardTextEl.textContent = showingAnswer ? card.answer : card.question;
+      cardSideLabelEl.textContent = showingAnswer ? "Answer" : "Question";
+      cardSourceEl.textContent = card.source;
+      cardProgressEl.textContent = `Card ${currentIndex + 1} of ${flashcards.length}`;
+      if (showingAnswer) {
+        stopCountdown();
+        timerBoxEl.hidden = true;
+      } else {
+        startCountdown();
+      }
+    }
+
+    document.getElementById("flip-btn").addEventListener("click", () => {
+      showingAnswer = !showingAnswer;
+      renderCard();
+    });
+
+    document.getElementById("next-btn").addEventListener("click", () => {
+      enableAudio();
+      if (showingTitle) {
+        showingTitle = false;
+        currentIndex = 0;
+      } else {
+        currentIndex = (currentIndex + 1) % flashcards.length;
+      }
+      showingAnswer = false;
+      renderCard();
+    });
+
+    document.getElementById("prev-btn").addEventListener("click", () => {
+      currentIndex = (currentIndex - 1 + flashcards.length) % flashcards.length;
+      showingAnswer = false;
+      renderCard();
+    });
+
+    renderCard();
+  </script>
+</body>
+</html>
+
